@@ -27,6 +27,7 @@ import { useMutation } from "@tanstack/react-query";
 import { LoginMutation } from "../config/mutations/auth.mutations";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/app/(components)/context/zustand-store";
 
 type SubmitData = {
   email: string;
@@ -36,6 +37,8 @@ type SubmitData = {
 export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
+  
+  const setAccessToken = useAuthStore((state) => state.setAccessToken)
 
   const loginMutation = useMutation({
     mutationFn: LoginMutation,
@@ -44,6 +47,7 @@ export default function Login() {
       setErrorMsg('');
 
       //Add access_token globally using zustand
+      setAccessToken(data.access_token)
     },
     onError: (error: any) => {
       setErrorMsg(error.data.messge || "Error Loggin in");

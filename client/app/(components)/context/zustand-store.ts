@@ -1,24 +1,25 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type State = {
-  name: string;
-  email: string;
+
+type AuthState = {
+  accessToken: string | null;
 };
 
-type Action = {
-  updateNameChange: (newName: string) => void;
-  updateEmailChange: (newEmail: string) => void;
+type AuthAction = {
+  setAccessToken: (token: string) => void;
+  clearAccessToken: () => void;
 };
 
-export const useNameStore = create<State & Action>()(
+export const useAuthStore = create<AuthState & AuthAction>()(
   persist(
     (set) => ({
-      name: "",
-      email: "",
-      updateNameChange: (newName: string) => set({ name: newName }),
-      updateEmailChange: (newEmail: string) => set({ email: newEmail }),
+      accessToken: null,
+      setAccessToken: (token: string) => set({ accessToken: token }),
+      clearAccessToken: () => set({ accessToken: null }),
     }),
-    { name: "user-details" }
+    {
+      name: "auth",
+    }
   )
 );
