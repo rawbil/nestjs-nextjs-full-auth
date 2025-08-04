@@ -36,3 +36,14 @@ export const LoginMutation = async (data: LoginData) => {
     throw error;
   }
 };
+
+export const LogoutMutation = async() => {
+    try {
+        
+    } catch (error: any) {
+        if(error.response) {
+            throw error.response
+        }
+        throw error
+    }
+}
