@@ -20,7 +20,7 @@ import {
   TooltipTrigger,
 } from "@radix-ui/react-tooltip";
 import { BsGoogle } from "react-icons/bs";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { loginSchema } from "@/components/utils/auth-validation";
 import { FaGithub, FaInstagram } from "react-icons/fa";
 import { useMutation } from "@tanstack/react-query";
@@ -37,17 +37,18 @@ type SubmitData = {
 export default function Login() {
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
-  
-  const setAccessToken = useAuthStore((state) => state.setAccessToken)
+
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const loginMutation = useMutation({
     mutationFn: LoginMutation,
     onSuccess: (data) => {
       toast.success(data.message);
-      setErrorMsg('');
-
+      setErrorMsg("");
+      // redirect('/');
+      router.push("/");
       //Add access_token globally using zustand
-      setAccessToken(data.access_token)
+      setAccessToken(data.access_token);
     },
     onError: (error: any) => {
       setErrorMsg(error.data.messge || "Error Loggin in");

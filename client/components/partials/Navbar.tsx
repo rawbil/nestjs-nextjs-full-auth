@@ -13,12 +13,14 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/app/(components)/context/zustand-store";
 
 export default function Navbar() {
   const [clientLoaded, setClientLoaded] = useState(false);
   const { setTheme } = useTheme();
   const router = useRouter();
   const pathname = usePathname();
+  const accessToken = useAuthStore((state) => state.accessToken);
   useEffect(() => {
     setClientLoaded(true);
   }, []);
@@ -45,7 +47,7 @@ export default function Navbar() {
             <Link
               href={"/"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/" && "bg-foreground text-background"
+                pathname === "/" ?"bg-foreground text-background" : 'text-foreground'
               }`}
             >
               Home
@@ -55,7 +57,7 @@ export default function Navbar() {
             <Link
               href={"/about"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/about" && "bg-foreground text-background"
+                pathname === "/about" ? "bg-foreground text-background" : "text-foreground"
               }`}
             >
               About
@@ -65,7 +67,7 @@ export default function Navbar() {
             <Link
               href={"/contact-us"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/contact-us" && "bg-foreground text-background"
+                pathname === "/contact-us" ? "bg-foreground text-background" : "text-foreground"
               }`}
             >
               Contact Us
@@ -74,20 +76,35 @@ export default function Navbar() {
         </ul>
 
         <section className="flex items-center gap-3">
-          <Button
-            className="rounded-sm"
-            onClick={() => router.push(pathname === "/auth/login" ? '/auth/register' : pathname === '/auth/register' ? '/auth/login' : '/auth/login')}
-          >
-            {pathname === "/auth/login"
-              ? "Register"
-              : pathname === "/auth/register"
-              ? "Login"
-              : "Login"}
-          </Button>
+          {accessToken ? (
+            <Button className="rounded-sm hover:bg-destructive/80 text-white bg-destructive">
+              Logout
+            </Button>
+          ) : (
+            <Button
+              className="rounded-sm"
+              onClick={() =>
+                router.push(
+                  pathname === "/auth/login"
+                    ? "/auth/register"
+                    : pathname === "/auth/register"
+                    ? "/auth/login"
+                    : "/auth/login"
+                )
+              }
+            >
+              {pathname === "/auth/login"
+                ? "Register"
+                : pathname === "/auth/register"
+                ? "Login"
+                : "Login"}
+            </Button>
+          )}
+
           {/* theme toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
+              <Button variant="outline" size="icon" className="bg-foreground hover:bg-foreground/80 text-background hover:text-background dark:text-foreground dark:hover:text-foreground">
                 <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
                 <span className="sr-only">Toggle theme</span>
