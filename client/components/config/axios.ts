@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation';
 import { useAuthStore } from "@/app/(components)/context/zustand-store";
 import axios from "axios";
 
@@ -22,6 +23,39 @@ axiosApi.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+//* Refresh token on 401 errors, otherwise redirect to login page
+axiosApi.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const response = await axiosApi.post(
+          "/auth/refresh",
+          {},
+          { withCredentials: true }
+        );
+        useAuthStore.getState().setAccessToken(response.data.access_token);
+        console.log("New Access Token generated", response.data.access_token);
+
+        // Update the original request's Authorization header
+        originalRequest.headers[
+          "Authorization"
+        ] = `Bearer ${response.data.access_token}`;
+
+        return axiosApi(originalRequest); //retry original request
+      } catch (err) {
+        useAuthStore.getState().clearAccessToken(); // clear access token
+        window.location.href="/auth/login" //Redirect to login
+        return Promise.reject(err);
+      }
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default axiosApi;

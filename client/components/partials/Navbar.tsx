@@ -12,8 +12,11 @@ import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/app/(components)/context/zustand-store";
+import { useMutation } from "@tanstack/react-query";
+import { LogoutMutation } from "../config/mutations/auth.mutations";
+import toast from "react-hot-toast";
 
 export default function Navbar() {
   const [clientLoaded, setClientLoaded] = useState(false);
@@ -21,11 +24,30 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const accessToken = useAuthStore((state) => state.accessToken);
+  const clearAccessToken = useAuthStore((state) => state.clearAccessToken);
   useEffect(() => {
     setClientLoaded(true);
   }, []);
 
   //  const location =  window. && window.location.href;
+
+  const logoutMutation = useMutation({
+    mutationFn: LogoutMutation,
+    onSuccess: (data) => {
+      toast.success(data.message);
+      clearAccessToken();
+      router.push("/auth/login");
+    },
+    onError: (error: any) => {
+      toast.error("Oops... error on logout");
+      //router.push("/auth/login");
+    },
+  });
+
+  //* Logout
+  const logoutFn = async () => {
+    logoutMutation.mutate();
+  };
 
   //add delay on client mount for server-side rendering
   if (!clientLoaded)
@@ -47,7 +69,9 @@ export default function Navbar() {
             <Link
               href={"/"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/" ?"bg-foreground text-background" : 'text-foreground'
+                pathname === "/"
+                  ? "bg-foreground text-background"
+                  : "text-foreground"
               }`}
             >
               Home
@@ -57,7 +81,9 @@ export default function Navbar() {
             <Link
               href={"/about"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/about" ? "bg-foreground text-background" : "text-foreground"
+                pathname === "/about"
+                  ? "bg-foreground text-background"
+                  : "text-foreground"
               }`}
             >
               About
@@ -67,7 +93,9 @@ export default function Navbar() {
             <Link
               href={"/contact-us"}
               className={`p-2  md:rounded-sm md:hover:text-background md:hover:bg-foreground transition-all ${
-                pathname === "/contact-us" ? "bg-foreground text-background" : "text-foreground"
+                pathname === "/contact-us"
+                  ? "bg-foreground text-background"
+                  : "text-foreground"
               }`}
             >
               Contact Us
@@ -77,7 +105,10 @@ export default function Navbar() {
 
         <section className="flex items-center gap-3">
           {accessToken ? (
-            <Button className="rounded-sm hover:bg-destructive/80 text-white bg-destructive">
+            <Button
+              className="rounded-sm hover:bg-destructive/80 text-white bg-destructive"
+              onClick={logoutFn}
+            >
               Logout
             </Button>
           ) : (
@@ -104,7 +135,11 @@ export default function Navbar() {
           {/* theme toggle */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="bg-foreground hover:bg-foreground/80 text-background hover:text-background dark:text-foreground dark:hover:text-foreground">
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-foreground hover:bg-foreground/80 text-background hover:text-background dark:text-foreground dark:hover:text-foreground"
+              >
                 <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                 <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
                 <span className="sr-only">Toggle theme</span>

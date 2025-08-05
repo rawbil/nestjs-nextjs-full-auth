@@ -62,18 +62,26 @@ export class AuthController {
     @GetUser('id') id: string,
   ) {
     //remove refresh token from database
-     await this.prisma.user.update({
+    const user = await this.prisma.user.update({
       where: { id },
       data: {
         refresh_token: null,
       },
     });
+
+    if (!user) {
+      throw new UnauthorizedException(
+        'Hmm... User not found. Please login again',
+      );
+    }
+
     res.clearCookie('refresh_token');
     return apiSuccess(200, undefined, 'Logged out');
   }
 
   //* POST /api/auth/refresh
-  @UseGuards(JwtGuard)
+  //@UseGuards(JwtGuard) - Don't Guard /refresh
+  @HttpCode(200)
   @Post('refresh')
   async refreshTokens(
     @Req() req: Request,
@@ -87,6 +95,12 @@ export class AuthController {
       if (!refresh_token) {
         throw new UnauthorizedException(
           'Refresh cookie not found. Please login again',
+        );
+      }
+
+      if (!user) {
+        throw new UnauthorizedException(
+          'Hmm... User not found. Please login again',
         );
       }
 

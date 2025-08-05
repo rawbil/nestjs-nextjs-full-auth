@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/app/(components)/context/zustand-store";
 import axiosApi from "../axios";
 
 type RegisterData = {
@@ -37,13 +38,24 @@ export const LoginMutation = async (data: LoginData) => {
   }
 };
 
-export const LogoutMutation = async() => {
-    try {
-        
-    } catch (error: any) {
-        if(error.response) {
-            throw error.response
-        }
-        throw error
+export const LogoutMutation = async () => {
+  try {
+    const response = await axiosApi.post(
+      "/auth/logout",
+      {},
+      {
+        headers: {
+          // Authorization = `Bearer ${accessToken}`
+          //Authorization: `Bearer ${useAuthStore.getState().accessToken}`,
+        },
+        withCredentials: true,
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      throw error.response;
     }
-}
+    throw error;
+  }
+};
